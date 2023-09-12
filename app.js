@@ -1,24 +1,32 @@
-const express = require('express');
-const WebSocket = require('ws');
-const cors = require("cors");
+'use strict';
 
-const app = express();
-const server = new WebSocket.Server({ port: 59898 });
+const express = require('express');
+const { Server } = require('ws');
+
+const PORT = process.env.PORT || 3000;
+// const INDEX = '/index.html';
+
+const server = express()
+  .use((req, res) => res.sendFile(INDEX, { root: __dirname }))
+  .listen(PORT, () => console.log(`Listening on ${PORT}`));
+
+const wss = new Server({ server });
+
+// wss.on('connection', (ws) => {
+//   console.log('Client connected');
+//   ws.on('close', () => console.log('Client disconnected'));
+// });
+
+// setInterval(() => {
+//   wss.clients.forEach((client) => {
+//     client.send(new Date().toTimeString());
+//   });
+// }, 1000);
+
 let wSoc, rSoc;
 let wInit = false, rInit = false;
 
-app.use(
-  cors({
-      origin:"http://localhost:3000",
-  })
-)
-app.use(express.json());
-
-app.get('/', (req, res) => {
-  res.send("Home page");
-});
-
-server.on('connection', (socket, req) => {
+wss.on('connection', (socket, req) => {
   console.log('Connection from', req.socket.remoteAddress);
   if(!wInit) {
     console.log("First one Connected");
@@ -47,8 +55,3 @@ server.on('connection', (socket, req) => {
   });
 
 });
-
-// console.log('WebSocket server is running...');
-
-const port = process.env.PORT || 8080;
-app.listen(port, () => console.log(`Listening on port ${port}..`));
